@@ -1,7 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var multer = require('multer');
-var upload = multer({dest:'./uploads'})
+var upload = multer({dest:'./uploads'});
+
+var User = require('../models/user');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -34,17 +36,35 @@ router.post('/register', upload.single('profileimage'), function(req, res, next)
 	}
 
 	req.checkBody('name','Please enter a name!').notEmpty();
-	req.checkBody('email', 'Please enter a valid email!').notEmail();
+	req.checkBody('email', 'Please enter a valid email!').isEmail();
 	req.checkBody('email', 'Please enter a valid email!').notEmpty();
 	req.checkBody('name', 'Please enter a valid name!').notEmpty();
 	req.checkBody('username', 'Please enter a valid username').notEmpty();
 	req.checkBody('password', 'Please enter a valid password').notEmpty();
+	req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
 
-	var errors = erq.validationErrors();
+
+	var errors = req.validationErrors();
 
 	if(errors){
 		res.render('register', {errors: errors});
 	}else{
+
+		var newUser = new User({
+			name: name,
+			email: email,
+			username: username,
+			password: password,
+			profileimage: profileimage
+		})
+
+		User.createUser(newUser, function(err, user){
+			if(err) throw err;
+			console.log(user);
+		});
+
+		res.location('/');
+		res.redirect('/');
 
 	}
 
